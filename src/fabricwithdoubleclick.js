@@ -1,0 +1,1 @@
+console.log("Fabric with double click")
