@@ -30,13 +30,15 @@ var prototypefabric = new function () {
         //canvas.selection = false;
 
         canvas.on('mouse:down', function (options) {
-            if(options.target && options.target.id == pointArray[0].id){
-                prototypefabric.polygon.generatePolygon(pointArray);
+            if (options.target) {
+                if (options.target.points) return;
+                if (options.target.id == pointArray[0].id){
+                    prototypefabric.polygon.generatePolygon(pointArray);
+                }
             }
-            if(polygonMode){
+            if (polygonMode){
                 prototypefabric.polygon.addPoint(options);
             } else {
-                polygonMode = true;
                 prototypefabric.polygon.drawPolygon();
             }
         });

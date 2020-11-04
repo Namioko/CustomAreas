@@ -32,14 +32,12 @@ var prototypefabric = new function () {
         fabric.util.addListener(window,'dblclick', function(options){
             prototypefabric.polygon.addPoint({e: options}, true);
             prototypefabric.polygon.generatePolygon(pointArray);
-            polygonMode = true;
             prototypefabric.polygon.drawPolygon();
         });
 
         canvas.on('mouse:down', function (options) {
-            // if(options.target && options.target.id == pointArray[0].id){
-            //     prototypefabric.polygon.generatePolygon(pointArray);
-            // }
+            if (options.target && (options.target.id == pointArray[0].id || options.target.points))
+                return;
             if(polygonMode){
                 prototypefabric.polygon.addPoint(options, true);
             }
