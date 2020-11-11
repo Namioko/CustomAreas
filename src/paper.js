@@ -28,7 +28,7 @@ var prototypefabric = new function () {
         prototypefabric.polygon.drawPolygon();
 
         tool.onMouseDown = function (options) {
-            if (options.item && (options.item.class === "line" || options.item.class === "point" || options.item.class === "polygon")) return;
+            if (options.item && (options.item.class === "point" || options.item.class === "polygon")) return;
             if (polygonMode){
                 prototypefabric.polygon.addPoint(options);
             } else {
@@ -37,7 +37,7 @@ var prototypefabric = new function () {
         };
 
         tool.onMouseDrag = function(options) {
-            if (options.item.class === "polygon") {
+            if (options.item && options.item.class === "polygon") {
                 const activeLine = options.item;
                 activeLine.setPosition(activeLine.position.add(options.delta));
             }

@@ -4,7 +4,7 @@ prototypefabric.polygon = {
         pointArray = new Array();
         activeLine = new Path({
             strokeWidth: 2,
-            fillColor: '#999999',
+            fillColor: new Color(153, 153, 153, 0.5),
             strokeColor: '#999999',
             class:'line'
         });
@@ -14,7 +14,7 @@ prototypefabric.polygon = {
         var id = new Date().getTime() + random;
         var circle = new Shape.Circle({
             radius: 5,
-            fillColor: '#ffffff',
+           fillColor: '#ffffff',
             strokeColor: '#333333',
             strokeWidth: 0.5,
             center: [(options.event.layerX), (options.event.layerY)],
@@ -31,6 +31,7 @@ prototypefabric.polygon = {
         pointArray.push(circle);
     },
     generatePolygon : function(pointArray){
+        activeLine.add(new Point(pointArray[0].position.x, pointArray[0].position.y));
         var points = new Array();
         pointArray.forEach(function(point){
             points.push(new Point({
@@ -40,7 +41,7 @@ prototypefabric.polygon = {
             point.remove();
         });
         activeLine.class = "polygon";
-        activeLine.fillColor = "red";
+        activeLine.fillColor = new Color(255, 0, 0, 0.5);
         activeLine.strokeColor = "red";
         polygonMode = false;
     }
