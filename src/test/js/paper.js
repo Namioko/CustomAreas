@@ -7,6 +7,7 @@ var max = 999999;
 var polygonMode = true;
 var pointArray = new Array();
 var lineArray = new Array();
+var polygons = [];
 var activeLine;
 var activeShape = false;
 var canvas;

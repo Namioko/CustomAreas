@@ -8,6 +8,7 @@ prototypefabric.polygon = {
             strokeColor: '#999999',
             class:'line'
         });
+        return activeLine;
     },
     addPoint : function(options) {
         var random = Math.floor(Math.random() * (max - min + 1)) + min;
