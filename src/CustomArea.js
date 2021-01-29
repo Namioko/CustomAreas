@@ -41,7 +41,7 @@ export default class CustomArea {
     addDeleteIcon = ({handleDelete}) => {
         const startPointPosition = this.polygon.segments[0].point;
         this.deleteIcon = new Raster({
-            source: "./bt-delete.png",
+            source: "./dist/bt-delete.png",
             position: startPointPosition,
             class: "deleteIcon"
         });

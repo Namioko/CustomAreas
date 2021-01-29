@@ -22586,7 +22586,7 @@ var CustomArea = function CustomArea(_ref) {
     var handleDelete = _ref3.handleDelete;
     var startPointPosition = _this.polygon.segments[0].point;
     _this.deleteIcon = new Raster({
-      source: "./bt-delete.png",
+      source: "./dist/bt-delete.png",
       position: startPointPosition,
       "class": "deleteIcon"
     });
@@ -22978,7 +22978,7 @@ window.addEventListener("load", function () {
   new CustomAreasTool_CustomAreasTool({
     wrapperId: "heatmapWrapper",
     imageOptions: {
-      src: "./image.jpg",
+      src: "./dist/image.jpg",
       width: 1000,
       height: 703
     }
