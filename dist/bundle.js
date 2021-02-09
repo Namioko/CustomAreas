@@ -15777,9 +15777,9 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
       _this.circles = [];
     }
 
-    _this.polygon.on("mouseenter", _this.handleMouseEnter);
+    _this.polygon.on("mouseover", _this.handleMouseOver);
 
-    _this.polygon.on("mouseleave", _this.handleMouseLeave);
+    _this.polygon.on("mouseout", _this.handleMouseOut);
 
     _this.polygon.on("mousemove", _this.handleMouseMove);
 
@@ -15958,7 +15958,7 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
     handleMouseMove && handleMouseMove();
   });
 
-  _defineProperty(this, "handleMouseEnter", function () {
+  _defineProperty(this, "handleMouseOver", function () {
     var hoverColors = _this.areaSettings.hoverColors;
 
     if (hoverColors) {
@@ -15968,21 +15968,31 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
     }
   });
 
-  _defineProperty(this, "handleMouseLeave", function () {
-    var renderColors = _this.areaSettings.renderColors;
+  _defineProperty(this, "handleMouseOut", function () {
+    var _this$areaSettings2 = _this.areaSettings,
+        clickColors = _this$areaSettings2.clickColors,
+        renderColors = _this$areaSettings2.renderColors;
 
-    if (!_this.state.isSelected) {
+    if (clickColors && _this.state.isSelected) {
+      _this.polygon.style("fill", clickColors.fill);
+
+      _this.polygon.style("stroke", clickColors.stroke);
+
+      _this.state.isSelected = true;
+    } else {
       _this.polygon.style("fill", renderColors.fill);
 
       _this.polygon.style("stroke", renderColors.stroke);
+
+      _this.state.isSelected = false;
     }
   });
 
   _defineProperty(this, "handleMouseClick", function () {
-    var _this$areaSettings2 = _this.areaSettings,
-        clickColors = _this$areaSettings2.clickColors,
-        renderColors = _this$areaSettings2.renderColors,
-        handleMouseClick = _this$areaSettings2.handleMouseClick;
+    var _this$areaSettings3 = _this.areaSettings,
+        clickColors = _this$areaSettings3.clickColors,
+        renderColors = _this$areaSettings3.renderColors,
+        handleMouseClick = _this$areaSettings3.handleMouseClick;
 
     if (clickColors && !_this.state.isSelected) {
       _this.polygon.style("fill", clickColors.fill);

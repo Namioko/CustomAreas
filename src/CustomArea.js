@@ -57,8 +57,8 @@ export default class CustomArea {
             this.circles = [];
         }
 
-        this.polygon.on("mouseenter", this.handleMouseEnter);
-        this.polygon.on("mouseleave", this.handleMouseLeave);
+        this.polygon.on("mouseover", this.handleMouseOver);
+        this.polygon.on("mouseout", this.handleMouseOut);
         this.polygon.on("mousemove", this.handleMouseMove);
         this.polygon.on("click", this.handleMouseClick);
     };
@@ -211,7 +211,7 @@ export default class CustomArea {
         handleMouseMove && handleMouseMove();
     };
 
-    handleMouseEnter = () => {
+    handleMouseOver = () => {
         const {hoverColors} = this.areaSettings;
 
         if (hoverColors) {
@@ -220,12 +220,17 @@ export default class CustomArea {
         }
     };
 
-    handleMouseLeave = () => {
-        const {renderColors} = this.areaSettings;
+    handleMouseOut = () => {
+        const {clickColors, renderColors} = this.areaSettings;
 
-        if (!this.state.isSelected) {
+        if (clickColors && this.state.isSelected) {
+            this.polygon.style("fill", clickColors.fill);
+            this.polygon.style("stroke", clickColors.stroke);
+            this.state.isSelected = true;
+        } else {
             this.polygon.style("fill", renderColors.fill);
             this.polygon.style("stroke", renderColors.stroke);
+            this.state.isSelected = false;
         }
     };
 
