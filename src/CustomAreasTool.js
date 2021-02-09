@@ -1,7 +1,6 @@
-import * as paper from "paper";
+import * as d3 from "d3";
 import CustomArea from "./CustomArea";
-
-window.paper = paper;
+import CommonFunctionsUtil from "./CommonFunctionsUtil";
 
 export default class CustomAreasTool {
     constructor({wrapperId, imageOptions}) {
@@ -9,132 +8,145 @@ export default class CustomAreasTool {
         this.imageOptions = imageOptions;
 
         this.customAreas = [];
-        this.pointArray = [];
+        this.circles = [];
+
+        this.state = {
+            dragging: false,
+            drawing: false,
+            lastPolygonIndex: 0
+        }
 
         this.initialize();
     }
 
     initialize = () => {
-        paper.install(window);
-
         // window.addEventListener("contextmenu", (event) => {
         //     event.stopPropagation();
         //     event.preventDefault();
         //     return false;
         // });
-
-        this.initializeCanvas();
-        this.initializeTool();
-
-        this.resetHelpObjects();
+        this.initializeImage();
 
         const areas = JSON.parse(sessionStorage.getItem("areas"));
-        // this.drawCustomAreas({areasCoordinates: JSON.parse("[[{\"x\":303,\"y\":130},{\"x\":411,\"y\":152},{\"x\":424,\"y\":240},{\"x\":326,\"y\":250},{\"x\":303,\"y\":130}],[{\"x\":529,\"y\":125},{\"x\":611,\"y\":125},{\"x\":641,\"y\":198},{\"x\":551,\"y\":210},{\"x\":529,\"y\":125}],[{\"x\":455,\"y\":290},{\"x\":529,\"y\":280},{\"x\":595,\"y\":336},{\"x\":455,\"y\":396},{\"x\":377,\"y\":348},{\"x\":451,\"y\":293},{\"x\":455,\"y\":290}]]")});
         this.drawCustomAreas({areas});
     };
 
-    initializeCanvas = () => {
+    initializeImage = () => {
         const {wrapperId, imageOptions} = this;
-        const wrapper = document.querySelector(`#${wrapperId}`);
-        wrapper.width = imageOptions.width;
-        wrapper.height = imageOptions.height;
 
-        const canvas = document.createElement("canvas");
-        canvas.width = imageOptions.width;
-        canvas.height = imageOptions.height;
-        wrapper.appendChild(canvas);
+        this.svg = d3.select(`#${wrapperId}`).append("svg")
+            .attr("height", imageOptions.height)
+            .attr("width", imageOptions.width);
 
-        paper.setup(canvas);
+        this.svg.append("image")
+            .attr("height", imageOptions.height)
+            .attr("width", imageOptions.width)
+            .attr("href", imageOptions.src);
 
-        const image = new Raster({
-            source: imageOptions.src,
-            position: view.center
-        });
-        Raster.prototype.rescale = function (width, height) {
-            this.scale(width / this.width, height / this.height);
-        };
-        image.onLoad = () => {
-            image.rescale(imageOptions.width, imageOptions.height);
-        };
-
-        // const overlayRect = new Rectangle(0, 0, imageOptions.width, imageOptions.height);
-        // const overlay = new Path.Rectangle(overlayRect);
-        // overlay.fillColor = new Color(0, 0, 0, 0.5);
+        this.svg.on("mousedown", this.handleMouseDown);
     };
 
-    initializeTool = () => {
-        const tool = new Tool();
-        tool.onMouseDown = this.handleMouseDown;
+    handleMouseDown = (event) => {
+        if (event && event.button !== 0) return;
+        if (event.target && (event.target.tagName !== "image" || event.target.classList.contains("deleteIcon"))) return;
+
+        this.startDrawing();
+        this.addPoint(event);
     };
 
-    handleMouseDown = (options) => {
-        if (options.event && options.event.button !== 0) return;
-        if (options.item && (options.item.class === "point" || options.item.class === "polygon" || options.item.class === "deleteIcon")) return;
-
-        this.addPoint(options);
+    startDrawing = () => {
+        if (!this.state.drawing) {
+            this.state.drawing = true;
+            this.resetHelpObjects();
+        }
     };
 
-    addPoint = (options) => {
+    addPoint = (event) => {
         let x, y;
-        if (options.event) {
-            x = options.event.offsetX;
-            y = options.event.offsetY;
+        if (event.offsetX) {
+            x = event.offsetX;
+            y = event.offsetY;
         } else {
-            x = options.point.x;
-            y = options.point.y;
+            x = event.point.x;
+            y = event.point.y;
         }
 
-        const circle = new Shape.Circle({
-            radius: 5,
-            fillColor: "#ffffff",
-            strokeColor: "#333333",
-            strokeWidth: 0.5,
-            center: [x, y],
-            id: this.pointArray.length + 1,
-            class: "point"
-        });
+        const circle = this.activePolygonWrapper.append("circle");
+        circle.attr("cx", x)
+            .attr("cy", y)
+            .attr("id", `custom-area__circle-${this.circles.length}`)
+            .attr("r", 4)
+            .attr("fill", this.circles.length === 0 ? "red" : "yellow")
+            .attr("stroke", "#000");
 
-        if (this.pointArray.length === 0) {
-            circle.fillColor = "red";
-            circle.onMouseDown = this.generatePolygonForDesigner;
+        if (this.circles.length === 0) {
+            circle.on("click", this.generatePolygonForDesigner);
         }
 
-        this.activeLine.add(new Point(x, y));
-        this.pointArray.push(circle);
+        if (this.circles.length === 2) {
+            this.circles[0].style("cursor", "pointer");
+        }
+
+
+        this.circles.push(circle);
+        this.activeLine.attr("points", CommonFunctionsUtil.getCoordinatesFromCircles({circles: this.circles}));
     };
+
+    handleDrag = ({isDragStarted}) => {
+        this.state.dragging = isDragStarted;
+    }
+
+    checkIfDrawing = () => {
+        return this.state.drawing;
+    }
 
     generatePolygonForDesigner = () => {
         this.generatePolygon({
             area: {
                 canBeDeleted: true,
                 canBeMoved: true,
+                canBeResized: true,
                 renderColors: {
                     fill: "#ff000080",
                     stroke: "#ff0000"
+                },
+                hoverColors: {
+                    fill: "#00ff0080",
+                    stroke: "#00ff00"
+                },
+                clickColors: {
+                    fill: "#0000ff80",
+                    stroke: "#0000ff"
                 }
             }
         });
     };
 
     generatePolygon = ({area}) => {
+        if (this.circles.length < 3) return;
+
+        this.activeLine.remove();
+        this.state.drawing = false;
+
         this.customAreas.push(new CustomArea({
-            polygon: this.activeLine,
+            index: this.state.lastPolygonIndex,
+            polygonWrapper: this.activePolygonWrapper,
+            circles: this.circles,
+            handleDrag: this.handleDrag,
+            checkIfDrawing: this.checkIfDrawing,
             handleDelete: this.handleAreaDelete,
             areaSettings: area
         }));
 
-        this.saveAreas();
+        this.state.lastPolygonIndex++;
 
-        this.resetHelpObjects();
+        this.saveAreas();
     };
 
     saveAreas = () => {
         sessionStorage.setItem("areas", JSON.stringify(this.customAreas.map((area) => ({
             ...area.areaSettings,
-            coordinates: (area.polygon.segments.map((segment) => ({
-                x: segment.point.x,
-                y: segment.point.y
-            }))),
+            points: area.polygon.attr("points"),
             hoverColors: {
                 fill: "#00ff0080",
                 stroke: "#00ff00"
@@ -147,31 +159,32 @@ export default class CustomAreasTool {
     };
 
     handleAreaDelete = (polygon) => {
-        const polygonIndex = this.customAreas.findIndex((area) => area.polygon.id === polygon.id);
+        const polygonIndex = this.customAreas.findIndex((area) => area.polygon.attr("id") === polygon.attr("id"));
         this.customAreas.splice(polygonIndex, 1);
 
         this.saveAreas();
     };
 
     resetHelpObjects = () => {
-        this.pointArray.forEach((point) => {
-            point.remove();
-        });
-        this.pointArray = [];
-        this.activeLine = new Path({
-            strokeWidth: 2,
-            fillColor: "#99999980",
-            strokeColor: "#999999",
-            class: "line",
-            dashArray: [10, 4]
-        });
+        this.circles = [];
+        this.activePolygonWrapper = this.svg.append("g");
+        this.activeLine = this.activePolygonWrapper.append("polyline")
+            .style("fill", "none")
+            .attr("stroke", "#000");
     };
 
-    // example of coordinates:
-    // [{x: 1, y: 1}, {x: 5, y: 5}, {x: 3, y: 7}]
     drawCustomAreas = ({areas}) => {
-        areas && areas.forEach((area) => {
-            area.coordinates.forEach((pointCoordinates) => this.addPoint(new Segment(new Point(pointCoordinates))));
+        areas && areas.length > 0 && areas.forEach((area) => {
+            this.startDrawing();
+            const points = area.points.split(",");
+            for (let i = 0; i < points.length; i+=2) {
+                this.addPoint({
+                    point: {
+                        x: parseInt(points[i]),
+                        y: parseInt(points[i+1])
+                    }
+                })
+            }
             this.generatePolygon({area});
         });
     };

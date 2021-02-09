@@ -13,6 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "d3": "^6.5.0",
+    "jbox": "^1.2.2",
+    "jquery": "^3.5.1",
     "paper": "^0.12.8"
   },
   "devDependencies": {
