@@ -15831,7 +15831,7 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
 
     _this.circleDragHandler = src_drag().on("start", function () {
       this.style.cursor = "move";
-      this.handleDrag({
+      handleDrag({
         isDragStarted: true
       });
     }).on("drag", function (d) {
@@ -15847,7 +15847,7 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
     });
     _this.circleDragHandlerWithDeleteIcon = src_drag().on("start", function () {
       this.style.cursor = "move";
-      this.handleDrag({
+      handleDrag({
         isDragStarted: true
       });
     }).on("drag", function (d) {
@@ -15860,13 +15860,13 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
       });
     }).on("end", function () {
       this.style.cursor = "pointer";
-      this.handleDrag({
+      handleDrag({
         isDragStarted: false
       });
     });
     _this.polygonDragHandler = src_drag().on("start", function () {
       this.style.cursor = "move";
-      this.handleDrag({
+      handleDrag({
         isDragStarted: true
       });
     }).on("drag", function (d) {
@@ -16127,23 +16127,7 @@ var CustomAreasTool_CustomAreasTool = function CustomAreasTool(_ref) {
 
   CustomAreasTool_defineProperty(this, "generatePolygonForDesigner", function () {
     _this.generatePolygon({
-      area: {
-        canBeDeleted: true,
-        canBeMoved: true,
-        canBeResized: true,
-        renderColors: {
-          fill: "#ff000080",
-          stroke: "#ff0000"
-        },
-        hoverColors: {
-          fill: "#00ff0080",
-          stroke: "#00ff00"
-        },
-        clickColors: {
-          fill: "#0000ff80",
-          stroke: "#0000ff"
-        }
-      }
+      area: standardAreaSettings
     });
   });
 
@@ -16334,6 +16318,23 @@ var setupPolyfills = function setupPolyfills() {
 
 
 polyfills();
+window.standardAreaSettings = {
+  canBeDeleted: true,
+  canBeMoved: true,
+  canBeResized: true,
+  renderColors: {
+    fill: "#ff000080",
+    stroke: "#ff0000"
+  },
+  hoverColors: {
+    fill: "#00ff0080",
+    stroke: "#00ff00"
+  },
+  clickColors: {
+    fill: "#0000ff80",
+    stroke: "#0000ff"
+  }
+};
 window.addEventListener("load", function () {
   new CustomAreasTool_CustomAreasTool({
     wrapperId: "heatmapWrapper",

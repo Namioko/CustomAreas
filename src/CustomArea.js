@@ -114,7 +114,7 @@ export default class CustomArea {
         this.circleDragHandler = d3.drag()
             .on("start", function() {
                 this.style.cursor = "move";
-                this.handleDrag({isDragStarted: true});
+                handleDrag({isDragStarted: true});
             })
             .on("drag", function(d) {
                 handleCircleDrag({d, circle: this});
@@ -127,7 +127,7 @@ export default class CustomArea {
         this.circleDragHandlerWithDeleteIcon = d3.drag()
             .on("start", function() {
                 this.style.cursor = "move";
-                this.handleDrag({isDragStarted: true});
+                handleDrag({isDragStarted: true});
             })
             .on("drag", function (d) {
                 handleCircleDrag({d, circle: this});
@@ -135,13 +135,13 @@ export default class CustomArea {
             })
             .on("end", function() {
                 this.style.cursor = "pointer";
-                this.handleDrag({isDragStarted: false});
+                handleDrag({isDragStarted: false});
             });
 
         this.polygonDragHandler = d3.drag()
             .on("start", function() {
                 this.style.cursor = "move";
-                this.handleDrag({isDragStarted: true});
+                handleDrag({isDragStarted: true});
             })
             .on("drag", function(d) {
                 handlePolygonDrag({d, polygon: this});

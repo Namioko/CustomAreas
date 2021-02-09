@@ -102,23 +102,7 @@ export default class CustomAreasTool {
 
     generatePolygonForDesigner = () => {
         this.generatePolygon({
-            area: {
-                canBeDeleted: true,
-                canBeMoved: true,
-                canBeResized: true,
-                renderColors: {
-                    fill: "#ff000080",
-                    stroke: "#ff0000"
-                },
-                hoverColors: {
-                    fill: "#00ff0080",
-                    stroke: "#00ff00"
-                },
-                clickColors: {
-                    fill: "#0000ff80",
-                    stroke: "#0000ff"
-                }
-            }
+            area: standardAreaSettings
         });
     };
 
