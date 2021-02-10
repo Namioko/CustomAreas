@@ -6,7 +6,7 @@ setupPolyfills();
 window.standardAreaSettings = {
     canBeDeleted: true,
     canBeMoved: true,
-    canBeResized: true,
+    canBeResized: false,
     renderColors: {
         fill: "#ff000080",
         stroke: "#ff0000"

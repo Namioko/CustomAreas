@@ -15735,6 +15735,7 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
       _handleDrag = _ref.handleDrag,
       checkIfDrawing = _ref.checkIfDrawing,
       handleDelete = _ref.handleDelete,
+      deselectOtherAreas = _ref.deselectOtherAreas,
       areaSettings = _ref.areaSettings;
 
   _classCallCheck(this, CustomArea);
@@ -15771,10 +15772,8 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
       _this.addDragHandlerToCircles();
     } else {
       _this.circles.forEach(function (circle) {
-        return circle.remove();
+        return circle.style("display", "none");
       });
-
-      _this.circles = [];
     }
 
     _this.polygon.on("mouseover", _this.handleMouseOver);
@@ -15864,12 +15863,11 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
         isDragStarted: false
       });
     });
-    _this.polygonDragHandler = src_drag().on("start", function () {
+    _this.polygonDragHandler = src_drag().on("drag", function (d) {
       this.style.cursor = "move";
       handleDrag({
         isDragStarted: true
       });
-    }).on("drag", function (d) {
       handlePolygonDrag({
         d: d,
         polygon: this
@@ -15969,46 +15967,62 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
   });
 
   _defineProperty(this, "handleMouseOut", function () {
+    _this.handleChoosingChange(true);
+  });
+
+  _defineProperty(this, "handleMouseClick", function () {
+    if (_this.checkIfDrawing()) return;
+    var handleMouseClick = _this.areaSettings.handleMouseClick;
+
+    _this.handleChoosingChange();
+
+    _this.handleSelectionChange(!_this.state.isSelected);
+
+    handleMouseClick && handleMouseClick();
+  });
+
+  _defineProperty(this, "handleChoosingChange", function (isMouseOut) {
     var _this$areaSettings2 = _this.areaSettings,
         clickColors = _this$areaSettings2.clickColors,
         renderColors = _this$areaSettings2.renderColors;
 
-    if (clickColors && _this.state.isSelected) {
+    if (!isMouseOut) {
+      _this.state.isChosen = !_this.state.isChosen;
+    }
+
+    if (clickColors && _this.state.isChosen) {
       _this.polygon.style("fill", clickColors.fill);
 
       _this.polygon.style("stroke", clickColors.stroke);
-
-      _this.state.isSelected = true;
     } else {
       _this.polygon.style("fill", renderColors.fill);
 
       _this.polygon.style("stroke", renderColors.stroke);
-
-      _this.state.isSelected = false;
     }
   });
 
-  _defineProperty(this, "handleMouseClick", function () {
-    var _this$areaSettings3 = _this.areaSettings,
-        clickColors = _this$areaSettings3.clickColors,
-        renderColors = _this$areaSettings3.renderColors,
-        handleMouseClick = _this$areaSettings3.handleMouseClick;
+  _defineProperty(this, "handleSelectionChange", function (isSelected) {
+    var index = _this.index,
+        _this$areaSettings3 = _this.areaSettings,
+        canBeResized = _this$areaSettings3.canBeResized,
+        canBeDeleted = _this$areaSettings3.canBeDeleted;
+    _this.state.isSelected = isSelected;
 
-    if (clickColors && !_this.state.isSelected) {
-      _this.polygon.style("fill", clickColors.fill);
-
-      _this.polygon.style("stroke", clickColors.stroke);
-
-      _this.state.isSelected = true;
-    } else {
-      _this.polygon.style("fill", renderColors.fill);
-
-      _this.polygon.style("stroke", renderColors.stroke);
-
-      _this.state.isSelected = false;
+    if (canBeResized) {
+      _this.circles.forEach(function (circle) {
+        return circle.style("display", isSelected ? "" : "none");
+      });
     }
 
-    handleMouseClick && handleMouseClick();
+    if (canBeDeleted) {
+      _this.deleteIcon.style("display", isSelected ? "" : "none");
+    }
+
+    if (isSelected) {
+      _this.deselectOtherAreas({
+        index: index
+      });
+    }
   });
 
   this.index = _index;
@@ -16024,11 +16038,13 @@ var CustomArea_CustomArea = function CustomArea(_ref) {
   }
 
   this.state = {
-    isSelected: false
+    isSelected: true,
+    isChosen: false
   };
   this.handleDrag = _handleDrag;
   this.checkIfDrawing = checkIfDrawing;
   this.handleDelete = handleDelete;
+  this.deselectOtherAreas = deselectOtherAreas;
   this.initialize();
 };
 
@@ -16156,12 +16172,37 @@ var CustomAreasTool_CustomAreasTool = function CustomAreasTool(_ref) {
       handleDrag: _this.handleDrag,
       checkIfDrawing: _this.checkIfDrawing,
       handleDelete: _this.handleAreaDelete,
+      deselectOtherAreas: _this.deselectOtherAreas,
       areaSettings: area
     }));
 
     _this.state.lastPolygonIndex++;
 
     _this.saveAreas();
+  });
+
+  CustomAreasTool_defineProperty(this, "handleAreaDelete", function (polygon) {
+    var polygonIndex = _this.customAreas.findIndex(function (area) {
+      return area.polygon.attr("id") === polygon.attr("id");
+    });
+
+    _this.customAreas.splice(polygonIndex, 1);
+
+    _this.saveAreas();
+  });
+
+  CustomAreasTool_defineProperty(this, "deselectOtherAreas", function (_ref4) {
+    var index = _ref4.index;
+
+    _this.customAreas.forEach(function (area) {
+      return area.index !== index && area.state.isSelected && area.handleSelectionChange(false);
+    });
+  });
+
+  CustomAreasTool_defineProperty(this, "deselectAllAreas", function () {
+    _this.customAreas.forEach(function (area) {
+      return area.state.isSelected && area.handleSelectionChange(false);
+    });
   });
 
   CustomAreasTool_defineProperty(this, "saveAreas", function () {
@@ -16180,24 +16221,16 @@ var CustomAreasTool_CustomAreasTool = function CustomAreasTool(_ref) {
     })));
   });
 
-  CustomAreasTool_defineProperty(this, "handleAreaDelete", function (polygon) {
-    var polygonIndex = _this.customAreas.findIndex(function (area) {
-      return area.polygon.attr("id") === polygon.attr("id");
-    });
-
-    _this.customAreas.splice(polygonIndex, 1);
-
-    _this.saveAreas();
-  });
-
   CustomAreasTool_defineProperty(this, "resetHelpObjects", function () {
     _this.circles = [];
     _this.activePolygonWrapper = _this.svg.append("g");
     _this.activeLine = _this.activePolygonWrapper.append("polyline").style("fill", "none").attr("stroke", "#000");
+
+    _this.deselectAllAreas();
   });
 
-  CustomAreasTool_defineProperty(this, "drawCustomAreas", function (_ref4) {
-    var areas = _ref4.areas;
+  CustomAreasTool_defineProperty(this, "drawCustomAreas", function (_ref5) {
+    var areas = _ref5.areas;
     areas && areas.length > 0 && areas.forEach(function (area) {
       _this.startDrawing();
 
@@ -16216,6 +16249,8 @@ var CustomAreasTool_CustomAreasTool = function CustomAreasTool(_ref) {
         area: area
       });
     });
+
+    _this.customAreas[_this.customAreas.length - 1].handleSelectionChange(false);
   });
 
   this.wrapperId = _wrapperId;
@@ -16331,7 +16366,7 @@ polyfills();
 window.standardAreaSettings = {
   canBeDeleted: true,
   canBeMoved: true,
-  canBeResized: true,
+  canBeResized: false,
   renderColors: {
     fill: "#ff000080",
     stroke: "#ff0000"

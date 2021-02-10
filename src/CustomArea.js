@@ -3,7 +3,7 @@ import {Tooltip} from "./Tooltip";
 import CommonFunctionsUtil from "./CommonFunctionsUtil";
 
 export default class CustomArea {
-    constructor({index, polygonWrapper, circles, handleDrag, checkIfDrawing, handleDelete, areaSettings}) {
+    constructor({index, polygonWrapper, circles, handleDrag, checkIfDrawing, handleDelete, deselectOtherAreas, areaSettings}) {
         this.index = index;
         this.polygonWrapper = polygonWrapper;
         this.circles = circles;
@@ -17,12 +17,15 @@ export default class CustomArea {
         }
 
         this.state = {
-            isSelected: false
+            isSelected: true,
+            isChosen: false
         }
 
         this.handleDrag = handleDrag;
         this.checkIfDrawing = checkIfDrawing;
         this.handleDelete = handleDelete;
+
+        this.deselectOtherAreas = deselectOtherAreas;
 
         this.initialize();
     }
@@ -53,8 +56,7 @@ export default class CustomArea {
         if (canBeResized) {
             this.addDragHandlerToCircles();
         } else {
-            this.circles.forEach((circle) => circle.remove());
-            this.circles = [];
+            this.circles.forEach((circle) => circle.style("display", "none"));
         }
 
         this.polygon.on("mouseover", this.handleMouseOver);
@@ -139,11 +141,9 @@ export default class CustomArea {
             });
 
         this.polygonDragHandler = d3.drag()
-            .on("start", function() {
+            .on("drag", function(d) {
                 this.style.cursor = "move";
                 handleDrag({isDragStarted: true});
-            })
-            .on("drag", function(d) {
                 handlePolygonDrag({d, polygon: this});
                 updateDeleteIconOnDrag({target: this});
             })
@@ -221,32 +221,52 @@ export default class CustomArea {
     };
 
     handleMouseOut = () => {
-        const {clickColors, renderColors} = this.areaSettings;
-
-        if (clickColors && this.state.isSelected) {
-            this.polygon.style("fill", clickColors.fill);
-            this.polygon.style("stroke", clickColors.stroke);
-            this.state.isSelected = true;
-        } else {
-            this.polygon.style("fill", renderColors.fill);
-            this.polygon.style("stroke", renderColors.stroke);
-            this.state.isSelected = false;
-        }
+        this.handleChoosingChange(true);
     };
 
     handleMouseClick = () => {
-        const {clickColors, renderColors, handleMouseClick} = this.areaSettings;
+        if (this.checkIfDrawing()) return;
 
-        if (clickColors && !this.state.isSelected) {
+        const {handleMouseClick} = this.areaSettings;
+
+        this.handleChoosingChange();
+
+        this.handleSelectionChange(!this.state.isSelected);
+
+        handleMouseClick && handleMouseClick();
+    };
+
+    handleChoosingChange = (isMouseOut) => {
+        const {clickColors, renderColors} = this.areaSettings;
+
+        if (!isMouseOut) {
+            this.state.isChosen = !this.state.isChosen;
+        }
+
+        if (clickColors && this.state.isChosen) {
             this.polygon.style("fill", clickColors.fill);
             this.polygon.style("stroke", clickColors.stroke);
-            this.state.isSelected = true;
         } else {
             this.polygon.style("fill", renderColors.fill);
             this.polygon.style("stroke", renderColors.stroke);
-            this.state.isSelected = false;
+        }
+    };
+
+    handleSelectionChange = (isSelected) => {
+        const {index, areaSettings: {canBeResized, canBeDeleted}} = this;
+
+        this.state.isSelected = isSelected;
+
+        if (canBeResized) {
+            this.circles.forEach((circle) => circle.style("display", isSelected ? "" : "none"));
         }
 
-        handleMouseClick && handleMouseClick();
-    }
+        if (canBeDeleted) {
+            this.deleteIcon.style("display", isSelected ? "" : "none");
+        }
+
+        if (isSelected) {
+            this.deselectOtherAreas({index});
+        }
+    };
 }

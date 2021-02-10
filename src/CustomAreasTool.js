@@ -119,12 +119,28 @@ export default class CustomAreasTool {
             handleDrag: this.handleDrag,
             checkIfDrawing: this.checkIfDrawing,
             handleDelete: this.handleAreaDelete,
+            deselectOtherAreas: this.deselectOtherAreas,
             areaSettings: area
         }));
 
         this.state.lastPolygonIndex++;
 
         this.saveAreas();
+    };
+
+    handleAreaDelete = (polygon) => {
+        const polygonIndex = this.customAreas.findIndex((area) => area.polygon.attr("id") === polygon.attr("id"));
+        this.customAreas.splice(polygonIndex, 1);
+
+        this.saveAreas();
+    };
+
+    deselectOtherAreas = ({index}) => {
+        this.customAreas.forEach((area) => area.index !== index && area.state.isSelected && area.handleSelectionChange(false));
+    };
+
+    deselectAllAreas = () => {
+        this.customAreas.forEach((area) => area.state.isSelected && area.handleSelectionChange(false));
     };
 
     saveAreas = () => {
@@ -142,19 +158,13 @@ export default class CustomAreasTool {
         }))));
     };
 
-    handleAreaDelete = (polygon) => {
-        const polygonIndex = this.customAreas.findIndex((area) => area.polygon.attr("id") === polygon.attr("id"));
-        this.customAreas.splice(polygonIndex, 1);
-
-        this.saveAreas();
-    };
-
     resetHelpObjects = () => {
         this.circles = [];
         this.activePolygonWrapper = this.svg.append("g");
         this.activeLine = this.activePolygonWrapper.append("polyline")
             .style("fill", "none")
             .attr("stroke", "#000");
+        this.deselectAllAreas();
     };
 
     drawCustomAreas = ({areas}) => {
@@ -171,5 +181,6 @@ export default class CustomAreasTool {
             }
             this.generatePolygon({area});
         });
+        this.customAreas[this.customAreas.length - 1].handleSelectionChange(false);
     };
 }
