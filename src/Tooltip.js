@@ -1,6 +1,6 @@
 import jBox from "jbox";
 
-export const Tooltip = ({id, targetId, title, content, onCreated}) => {
+export const Tooltip = ({id, targetId, title, content, onCreated, offset}) => {
     return title || content
         ? new jBox("Tooltip", {
             id,
@@ -13,7 +13,8 @@ export const Tooltip = ({id, targetId, title, content, onCreated}) => {
             content,
             closeOnMouseleave: true,
             onCreated,
-            delayClose: 200
+            delayClose: 200,
+            offset
         })
         : undefined;
 };

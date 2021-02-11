@@ -31,7 +31,7 @@ export default class CustomArea {
     }
 
     initialize = () => {
-        const {index, areaSettings: {canBeMoved, canBeDeleted, canBeResized}} =  this;
+        const {index, areaSettings: {canBeMoved, canBeDeleted, canBeResized}} = this;
 
         this.initializeDragHandlers();
         this.customizeToPolygon();
@@ -44,7 +44,8 @@ export default class CustomArea {
                     id: `tooltip-${index}`,
                     targetId: this.polygon.attr("id"),
                     content: `tooltip-${index}`,
-                    title: "title"
+                    title: "title",
+                    offset: {x: CommonFunctionsUtil.getMiddleXPointFromPolygon({polygonPoints: this.polygon.attr("points").split(",")})}
                 });
             }
         }
@@ -73,7 +74,7 @@ export default class CustomArea {
         this.polygon.attr("points", CommonFunctionsUtil.getCoordinatesFromCircles({circles}))
             .attr("id", `custom-area__polygon-${index}`)
             .style("fill", this.areaSettings.renderColors.fill)
-            .style("stroke",  this.areaSettings.renderColors.stroke)
+            .style("stroke", this.areaSettings.renderColors.stroke)
             .style("cursor", "pointer");
     };
 
@@ -114,20 +115,20 @@ export default class CustomArea {
         // (otherwise, the "drag" event works incorrectly: too slow for user)
 
         this.circleDragHandler = d3.drag()
-            .on("start", function() {
+            .on("start", function () {
                 this.style.cursor = "move";
                 handleDrag({isDragStarted: true});
             })
-            .on("drag", function(d) {
+            .on("drag", function (d) {
                 handleCircleDrag({d, circle: this});
             })
-            .on("end", function() {
+            .on("end", function () {
                 this.style.cursor = "pointer";
                 handleDrag({isDragStarted: false});
             });
 
         this.circleDragHandlerWithDeleteIcon = d3.drag()
-            .on("start", function() {
+            .on("start", function () {
                 this.style.cursor = "move";
                 handleDrag({isDragStarted: true});
             })
@@ -135,19 +136,19 @@ export default class CustomArea {
                 handleCircleDrag({d, circle: this});
                 updateDeleteIconOnDrag({target: this});
             })
-            .on("end", function() {
+            .on("end", function () {
                 this.style.cursor = "pointer";
                 handleDrag({isDragStarted: false});
             });
 
         this.polygonDragHandler = d3.drag()
-            .on("drag", function(d) {
+            .on("drag", function (d) {
                 this.style.cursor = "move";
                 handleDrag({isDragStarted: true});
                 handlePolygonDrag({d, polygon: this});
                 updateDeleteIconOnDrag({target: this});
             })
-            .on("end", function() {
+            .on("end", function () {
                 this.style.cursor = "pointer";
                 handleDrag({isDragStarted: false});
             });
