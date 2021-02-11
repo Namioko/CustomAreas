@@ -92,10 +92,10 @@ export default class CustomArea {
         const startPointPosition = CommonFunctionsUtil.getCoordinatesFromCircle(this.circles[0]);
         this.deleteIcon = this.polygonWrapper.append("image");
         this.deleteIcon.attr("href", "./dist/bt-delete.png")
-            .attr("x", startPointPosition[0] - 15)
-            .attr("y", startPointPosition[1] - 15)
-            .attr("width", 15)
-            .attr("height", 15)
+            .attr("x", startPointPosition[0] - 20)
+            .attr("y", startPointPosition[1] - 20)
+            .attr("width", 20)
+            .attr("height", 20)
             .attr("class", "deleteIcon")
             .style("cursor", "pointer");
 
