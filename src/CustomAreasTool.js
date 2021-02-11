@@ -181,6 +181,9 @@ export default class CustomAreasTool {
             }
             this.generatePolygon({area});
         });
-        this.customAreas[this.customAreas.length - 1].handleSelectionChange(false);
+
+        if (this.customAreas.length > 0) {
+            this.customAreas[this.customAreas.length - 1].handleSelectionChange(false);
+        }
     };
 }
