@@ -56,8 +56,6 @@ export default class CustomArea {
 
         if (canBeResized) {
             this.addDragHandlerToCircles();
-        } else {
-            this.circles.forEach((circle) => circle.style("display", "none"));
         }
 
         this.polygon.on("mouseover", this.handleMouseOver);
@@ -254,13 +252,11 @@ export default class CustomArea {
     };
 
     handleSelectionChange = (isSelected) => {
-        const {index, areaSettings: {canBeResized, canBeDeleted}} = this;
+        const {index, areaSettings: {canBeDeleted}} = this;
 
         this.state.isSelected = isSelected;
 
-        if (canBeResized) {
-            this.circles.forEach((circle) => circle.style("display", isSelected ? "" : "none"));
-        }
+        this.circles.forEach((circle) => circle.style("display", isSelected ? "" : "none"));
 
         if (canBeDeleted) {
             this.deleteIcon.style("display", isSelected ? "" : "none");

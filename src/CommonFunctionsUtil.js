@@ -1,5 +1,3 @@
-import * as d3 from "d3";
-
 const CommonFunctionsUtil = {
     getCoordinatesFromCircle: (circle) => [circle.attr("cx"), circle.attr("cy")],
     getCoordinatesFromCircles: ({circles}) => {
