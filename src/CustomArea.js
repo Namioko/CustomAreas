@@ -73,6 +73,7 @@ export default class CustomArea {
             .attr("id", `custom-area__polygon-${index}`)
             .style("fill", this.areaSettings.renderColors.fill)
             .style("stroke", this.areaSettings.renderColors.stroke)
+            .style("stroke-dasharray", 5)
             .style("cursor", "pointer");
     };
 
