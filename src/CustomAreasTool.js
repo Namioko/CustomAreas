@@ -36,7 +36,8 @@ export default class CustomAreasTool {
 
         this.svg = d3.select(`#${wrapperId}`).append("svg")
             .attr("height", imageOptions.height)
-            .attr("width", imageOptions.width);
+            .attr("width", imageOptions.width)
+            .style("overflow", "hidden");
 
         this.svg.append("image")
             .attr("height", imageOptions.height)
@@ -44,14 +45,22 @@ export default class CustomAreasTool {
             .attr("href", imageOptions.src);
 
         this.svg.on("mousedown", this.handleMouseDown);
+        this.svg.on("mouseleave", this.handleMouseLeave);
     };
 
     handleMouseDown = (event) => {
         if (event && event.button !== 0) return;
-        if (event.target && (event.target.tagName !== "image" || event.target.classList.contains("deleteIcon"))) return;
+
+        const {target} = event;
+        const targetClass = target && target.getAttribute("class");
+        if (event.target && (event.target.tagName !== "image" || targetClass && targetClass.indexOf("deleteIcon") >= 0)) return;
 
         this.startDrawing();
         this.addPoint(event);
+    };
+
+    handleMouseLeave = () => {
+        this.state.dragging = false;
     };
 
     startDrawing = () => {
@@ -100,6 +109,10 @@ export default class CustomAreasTool {
         return this.state.drawing;
     }
 
+    checkIfDragging = () => {
+        return this.state.dragging;
+    }
+
     generatePolygonForDesigner = () => {
         this.generatePolygon({
             area: standardAreaSettings
@@ -117,6 +130,7 @@ export default class CustomAreasTool {
             polygonWrapper: this.activePolygonWrapper,
             circles: this.circles,
             handleDrag: this.handleDrag,
+            checkIfDragging: this.checkIfDragging,
             checkIfDrawing: this.checkIfDrawing,
             handleDelete: this.handleAreaDelete,
             deselectOtherAreas: this.deselectOtherAreas,
@@ -148,11 +162,11 @@ export default class CustomAreasTool {
             ...area.areaSettings,
             points: area.polygon.attr("points"),
             hoverColors: {
-                fill: "#00ff0080",
+                fill: "rgba(0, 255, 0, 0.5)",
                 stroke: "#00ff00"
             },
             clickColors: {
-                fill: "#0000ff80",
+                fill: "rgba(0, 0, 255, 0.5)",
                 stroke: "#0000ff"
             }
         }))));
@@ -170,7 +184,7 @@ export default class CustomAreasTool {
     drawCustomAreas = ({areas}) => {
         areas && areas.length > 0 && areas.forEach((area) => {
             this.startDrawing();
-            const points = area.points.split(",");
+            const points = area.points.split(/[ ,]+/);
             for (let i = 0; i < points.length; i+=2) {
                 this.addPoint({
                     point: {

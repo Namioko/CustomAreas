@@ -3,7 +3,7 @@ import {Tooltip} from "./Tooltip";
 import CommonFunctionsUtil from "./CommonFunctionsUtil";
 
 export default class CustomArea {
-    constructor({index, polygonWrapper, circles, handleDrag, checkIfDrawing, handleDelete, deselectOtherAreas, areaSettings}) {
+    constructor({index, polygonWrapper, circles, handleDrag, checkIfDragging, checkIfDrawing, handleDelete, deselectOtherAreas, areaSettings}) {
         this.index = index;
         this.polygonWrapper = polygonWrapper;
         this.circles = circles;
@@ -11,7 +11,7 @@ export default class CustomArea {
 
         if (!areaSettings.renderColors) {
             this.areaSettings.renderColors = {
-                fill: "#ff000080",
+                fill: "rgba(255, 0, 0, 0.5)",
                 stroke: "#ff0000"
             };
         }
@@ -22,6 +22,7 @@ export default class CustomArea {
         }
 
         this.handleDrag = handleDrag;
+        this.checkIfDragging = checkIfDragging;
         this.checkIfDrawing = checkIfDrawing;
         this.handleDelete = handleDelete;
 
@@ -31,24 +32,19 @@ export default class CustomArea {
     }
 
     initialize = () => {
-        const {index, areaSettings: {canBeMoved, canBeDeleted, canBeResized}} = this;
+        const {index, areaSettings: {canBeMoved, canBeDeleted, canBeResized, shouldHaveTooltip}} = this;
 
         this.initializeDragHandlers();
         this.customizeToPolygon();
 
-        if (canBeMoved) {
-            this.polygonDragHandler(this.polygon);
-        } else {
-            if (!canBeResized) {
-                this.tooltip = new Tooltip({
-                    id: `tooltip-${index}`,
-                    targetId: this.polygon.attr("id"),
-                    content: `tooltip-${index}`,
-                    title: "title",
-                    offset: {x: CommonFunctionsUtil.getMiddleXPointFromPolygon({polygonPoints: this.polygon.attr("points").split(",")})}
-                });
-            }
-        }
+        this.polygonDragHandler(this.polygon);
+        // this.tooltip = new Tooltip({
+        //     id: `tooltip-${index}`,
+        //     targetId: this.polygon.attr("id"),
+        //     content: `tooltip-${index}`,
+        //     title: "title",
+        //     offset: {x: CommonFunctionsUtil.getMiddleXPointFromPolygon({polygonPoints: this.polygon.attr("points").split(/[ ,]+/)})}
+        // });
 
         if (canBeDeleted) {
             this.addDeleteIcon();
@@ -100,10 +96,10 @@ export default class CustomArea {
             .attr("class", "deleteIcon")
             .style("cursor", "pointer");
 
-        this.deleteIcon.on("click", () => {
+        this.deleteIcon.on("click", (function() {
             this.handleDelete(this.polygon);
             this.polygonWrapper.remove();
-        });
+        }).bind(this));
     };
 
 
@@ -133,7 +129,7 @@ export default class CustomArea {
             })
             .on("drag", function (d) {
                 handleCircleDrag({d, circle: this});
-                updateDeleteIconOnDrag({target: this});
+                updateDeleteIconOnDrag();
             })
             .on("end", function () {
                 this.style.cursor = "pointer";
@@ -141,11 +137,13 @@ export default class CustomArea {
             });
 
         this.polygonDragHandler = d3.drag()
-            .on("drag", function (d) {
+            .on("start", function () {
                 this.style.cursor = "move";
                 handleDrag({isDragStarted: true});
+            })
+            .on("drag", function (d) {
                 handlePolygonDrag({d, polygon: this});
-                updateDeleteIconOnDrag({target: this});
+                updateDeleteIconOnDrag();
             })
             .on("end", function () {
                 this.style.cursor = "pointer";
@@ -154,7 +152,7 @@ export default class CustomArea {
     };
 
     handleCircleDrag = ({d, circle}) => {
-        if (this.checkIfDrawing()) return;
+        if (this.checkIfDrawing() || !this.checkIfDragging()) return;
 
         const dragCircle = d3.select(circle);
         dragCircle.attr("cx", d.x + d.dx)
@@ -166,7 +164,7 @@ export default class CustomArea {
     };
 
     handlePolygonDrag = ({d, polygon}) => {
-        if (this.checkIfDrawing()) return;
+        if (this.checkIfDrawing() || !this.checkIfDragging()) return;
 
         const dragPolygon = d3.select(polygon);
 
@@ -191,7 +189,7 @@ export default class CustomArea {
                 newPoints.push([cx, cy]);
             });
         } else {
-            const points = polygon.attr("points").split(",");
+            const points = polygon.attr("points").split(/[ ,]+/);
             points.forEach((point, index) => {
                 newPoints.push(parseInt(point) + (index % 2 === 0 ? coordinatesShift.dx : coordinatesShift.dy));
             })
@@ -200,10 +198,10 @@ export default class CustomArea {
         return newPoints;
     };
 
-    updateDeleteIconOnDrag = ({target}) => {
-        const points = this.polygon.attr("points").split(",");
-        this.deleteIcon.attr("x", points[0] - 15)
-            .attr("y", points[1] - 15);
+    updateDeleteIconOnDrag = () => {
+        const points = this.polygon.attr("points").split(/[ ,]+/);
+        this.deleteIcon.attr("x", parseInt(points[0]) - 15)
+            .attr("y", parseInt(points[1]) - 15);
     };
 
     handleMouseMove = () => {

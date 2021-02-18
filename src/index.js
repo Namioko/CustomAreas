@@ -1,22 +1,20 @@
+import 'babel-polyfill';
 import CustomAreasTool from "./CustomAreasTool";
-import setupPolyfills from "./polyfills";
-
-setupPolyfills();
 
 window.standardAreaSettings = {
     canBeDeleted: true,
-    canBeMoved: false,
-    canBeResized: false,
+    canBeMoved: true,
+    canBeResized: true,
     renderColors: {
-        fill: "#ff000080",
+        fill: "rgba(255, 0, 0, 0.5)",
         stroke: "#ff0000"
     },
     hoverColors: {
-        fill: "#00ff0080",
+        fill: "rgba(0, 255, 0, 0.5)",
         stroke: "#00ff00"
     },
     clickColors: {
-        fill: "#0000ff80",
+        fill: "rgba(0, 0, 255, 0.5)",
         stroke: "#0000ff"
     }
 };
